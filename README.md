@@ -1,39 +1,26 @@
-# Microsoft 365, Azure Entra ID & Intune Administration Lab
+# Microsoft 365, Entra ID & Intune Administration Lab
 
-Enterprise cloud identity management, security compliance, and endpoint deployment using Microsoft 365 Developer E5 tenant and Microsoft Intune (MDM).
+A hands-on Microsoft 365 Business Premium trial lab for cloud identity administration, Exchange shared mailbox access, Windows endpoint enrollment, and BitLocker compliance.
 
-## Table of Contents
-1. [Overview](#1-overview)
-2. [Azure Entra ID Identity Management](#2-azure-entra-id-identity-management)
-3. [Microsoft 365 Tenant Administration](#3-microsoft-365-tenant-administration)
-4. [Microsoft Intune (MDM) & Endpoint Security](#4-microsoft-intune-mdm--endpoint-security)
-5. [Security & Compliance Policies](#5-security--compliance-policies)
+> This is a personal learning lab using test accounts and a Windows 11 Enterprise Evaluation VM. It is not a production deployment. The tenant is on a Microsoft 365 Business Premium trial, not a Microsoft 365 E5 Developer tenant.
 
----
+## Project status
 
-## 1. Overview
-This project demonstrates cloud-based identity and endpoint management in a simulated corporate environment. It covers user lifecycle management, cloud security baselines, conditional access policies, and automated device compliance via Microsoft Intune.
+**Approximately 60% complete** against the planned lab scope. Core identity, mailbox, device enrollment, and one endpoint compliance scenario are complete. App deployment and Conditional Access remain.
 
----
+| Workstream | Status |
+| --- | --- |
+| Entra ID test users, departments, security groups, and delegated Helpdesk Administrator role | Complete |
+| Microsoft 365 Business Premium trial license assignment | Complete for the tested account |
+| Sales shared mailbox, member access, and Send as verification | Complete |
+| Windows 11 VM joined to Entra ID and enrolled in Intune | Complete |
+| BitLocker policy, compliance evaluation, and compliant device result | Complete |
+| Intune silent application deployment | Planned |
+| Conditional Access MFA and compliant-device access test | Planned |
+| Hybrid connection to the existing on-premises AD lab | Optional future extension |
 
-## 2. Azure Entra ID Identity Management
-* **User & Group Provisioning:** Created and managed cloud user accounts, department-based security groups, and distribution lists.
-* **Role-Based Access Control (RBAC):** Assigned granular administrative roles (e.g., Helpdesk Administrator) to simulate principle of least privilege.
+## Evidence and implementation notes
 
----
+Detailed steps, configuration choices, verification results, and screenshots are in [admin.md](admin.md). Screenshots are embedded directly below the related tasks and stored in [resources/](resources/).
 
-## 3. Microsoft 365 Tenant Administration
-* **License Management:** Provisioned and managed Microsoft 365 Business Premium / E5 licenses for users.
-* **Exchange Online:** Configured shared mailboxes, mail flow rules, and anti-spam/anti-malware policies.
-
----
-
-## 4. Microsoft Intune (MDM) & Endpoint Security
-* **Device Enrollment:** Joined Windows 11 Enterprise client VMs to Azure Entra ID and enrolled them into Microsoft Intune.
-* **Silent App Deployment:** Deployed automated software installation packages (e.g., core utility tools) remotely across managed endpoints.
-
----
-
-## 5. Security & Compliance Policies
-* **Conditional Access Policies:** Enforced Multi-Factor Authentication (MFA) and blocked access from non-compliant locations/devices.
-* **Device Compliance:** Configured security baselines requiring BitLocker drive encryption and minimum password complexity before granting corporate resource access.
+The project uses fictional employee accounts. Passwords, temporary credentials, and BitLocker recovery keys are not published.

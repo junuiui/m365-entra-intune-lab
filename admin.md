@@ -13,7 +13,7 @@ This personal lab simulates employee onboarding, department-based group manageme
 | Primary administrator | Junui Hong |
 | Test workforce | 10 employees across Sales, HR, Finance, IT, and Operations |
 | Identity model | Cloud-only; existing VMware Active Directory lab remains separate |
-| Endpoint management | Planned; no Windows device enrollment completed in this phase |
+| Endpoint management | Windows 11 Enterprise Evaluation VM joined to Entra ID and enrolled in Intune |
 
 ## 1. User Provisioning and Licensing
 
@@ -101,10 +101,44 @@ The failure is an observed result. Its generic error does not establish that rol
 
 Screenshots are embedded under the corresponding lab activity and stored in [resources/](resources/). Do not publish passwords, temporary passwords, MFA QR codes, recovery codes, or payment information.
 
-## Next Phase: Windows Endpoint Management
+## 5. Windows Endpoint Enrollment and BitLocker Compliance
 
-Create a separate Windows 11 VM in VMware, join it to Microsoft Entra ID, and enroll it in Intune. This provides a managed endpoint for testing app installation, configuration delivery, device compliance, and access outcomes. The existing AD lab remains available for a later hybrid identity extension.
+Created a Windows 11 Enterprise Evaluation x64 virtual machine in VMware Workstation with 8 GB RAM, 2 vCPUs, and an 80 GB virtual disk. The VM uses bridged networking so it can reach the internet without changing the existing Active Directory lab's VMnet8 network.
 
-Planned VM baseline: 8 GB RAM, 2 CPU cores, 80 GB virtual disk, NAT networking, and Windows 11 Enterprise evaluation media. Confirm the VMware version and Windows 11 installation requirements before creation.
+Signed in to Windows as Alex Kim, joined the device to Junui Hong Lab's Microsoft Entra ID, and enrolled it in Intune. Intune identified the device as **DESKTOP-3SO75PG**, with Alex Kim as the primary user and VMware as the device model. Intune initially recorded personal ownership.
 
-No Intune enrollment, app deployment, Conditional Access policy, BitLocker enforcement, or device compliance result is claimed as completed in this phase.
+Created the Windows compliance policy **WIN-COMP-Sales-BitLocker** and assigned it to **SG-Sales-Users**. The policy requires BitLocker. The device first reported **Not compliant** because BitLocker was off.
+
+Created the endpoint security disk-encryption policy **WIN-ENC-Sales-BitLocker**, assigned to the same Sales group. After detaching the Windows installation ISO from the VM's virtual CD/DVD drive and retrying BitLocker, Windows began encrypting the C: drive. The recovery key was confirmed present in Intune; the key itself is intentionally not included in this repository.
+
+![BitLocker enabled on the Windows 11 VM](resources/12-bitlocker-on.png)
+
+After the device checked in again, Intune showed the VM as **Compliant**. The final status is evidence that the BitLocker compliance requirement passed on this lab endpoint.
+
+![Intune reports the Windows device as compliant](resources/13-intune-compliant.png)
+
+This is a single-device lab validation using a Windows evaluation image. No app deployment or Conditional Access enforcement has been completed yet.
+
+## Validation Status
+
+| Check | Status |
+| --- | --- |
+| Windows 11 Enterprise Evaluation VM created | Visually verified |
+| Device joined to Microsoft Entra ID | Visually verified in Windows work/school settings |
+| Device enrolled and visible in Intune | Visually verified |
+| Sales BitLocker compliance policy created and assigned | Visually verified |
+| Initial noncompliance due to BitLocker being off | Visually verified |
+| BitLocker encryption enabled on C: | Visually verified |
+| Recovery key present in Intune | User confirmed; key not published |
+| Device reports Compliant after check-in | Visually verified |
+| Silent app deployment | Not completed |
+| Conditional Access enforcement | Not completed |
+| Reply receipt in Sales shared mailbox | Not confirmed |
+
+Screenshots are embedded under the corresponding lab activity and stored in [resources/](resources/). Do not publish passwords, temporary passwords, MFA QR codes, recovery codes, or payment information.
+
+## Next Steps
+
+1. Deploy a small utility app to the Intune-managed VM and verify installation status.
+2. Build a Conditional Access test policy for MFA and compliant-device access, using safe exclusions to avoid locking out the administrator.
+3. Optionally extend the cloud-only lab with the existing on-premises Active Directory environment after documenting the current cloud configuration.
