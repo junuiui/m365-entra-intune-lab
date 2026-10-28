@@ -17,11 +17,13 @@ This personal lab simulates employee onboarding, department-based group manageme
 
 ## 1. User Provisioning and Licensing
 
-- Created Alex Kim as a cloud user with username **alexkim@junuihonglab.onmicrosoft.com** and job title Sales Associate.
-- Initially observed Alex as unlicensed, then assigned Microsoft 365 Business Premium. The updated assignment was verified in the Active users list.
-- Reset Alex's automatically generated temporary password when it was unavailable, then verified successful Microsoft 365 sign-in.
-- Verified delivery of a message from Alex to Junui Hong in Outlook.
-- Created nine additional test employees and populated department and job title information.
+Created Alex Kim as a cloud user with username **alexkim@junuihonglab.onmicrosoft.com** and job title Sales Associate. After initially observing the account as unlicensed, assigned Microsoft 365 Business Premium and verified the assignment in Active users. Reset Alex's temporary password and verified Microsoft 365 sign-in.
+
+![Create a cloud user](resources/00-create-new-user.png)
+
+![Assign Microsoft 365 Business Premium](resources/01-create-new-user-licence.png)
+
+Created nine additional test employees and populated their department and job title information.
 
 | Employee | Department | Job title |
 | --- | --- | --- |
@@ -36,41 +38,49 @@ This personal lab simulates employee onboarding, department-based group manageme
 | Noah Smith | IT | IT Administrator |
 | Ava Martin | Operations | Operations Coordinator |
 
-The screenshots show the initial user creation and license assignment. They do not establish the license status of every test employee. An IT job title does not itself grant an administrative role.
+The images show initial account creation and Alex's license assignment; they do not establish the license status of all test employees. An IT job title does not itself grant an administrative role.
 
 ## 2. Department Security Groups
 
-Created assigned-membership security groups for department-based access and future policy targeting:
+Created assigned-membership security groups for department-based access and future policy targeting. The Sales group contains Alex Kim, Emma Lee, and Daniel Park. Department groups were created for HR, Finance, IT, and Operations as well.
 
-| Group | Members |
-| --- | --- |
-| SG-Sales-Users | Alex Kim, Emma Lee, Daniel Park |
-| SG-HR-Users | Olivia Chen, James Wilson |
-| SG-Finance-Users | Sophia Patel, Ethan Brown |
-| SG-IT-Users | Mia Garcia, Noah Smith |
-| SG-Operations-Users | Ava Martin |
+![Alex Kim in the Sales security group](resources/03-sales-security-group.png)
 
-The Sales group membership is directly shown in the evidence. The full group list is also captured. Completion of other group memberships was reported by the lab operator. These are assigned groups: changing a user's Department attribute does not automatically update group membership.
+![Department security groups](resources/04-SG.png)
+
+Changing a user's Department attribute does not automatically update assigned group membership. These security groups are intended for access and policy targeting, not as mail distribution lists.
 
 ## 3. Sales Shared Mailbox
 
-- Created **sales@junuihonglab.onmicrosoft.com**.
-- Added Alex Kim, Daniel Park, and Emma Lee as members.
-- Verified that the mailbox details showed three Read and manage assignments, three Send as assignments, and zero Send on behalf assignments.
-- Verified that Alex sent a message using the Sales identity and that it arrived in Junui's mailbox.
+Created **sales@junuihonglab.onmicrosoft.com** and added Alex Kim, Daniel Park, and Emma Lee as members. The mailbox showed three Read and manage assignments, three Send as assignments, and zero Send on behalf assignments.
 
-Read and manage permits mailbox access; Send as permits sending using the shared mailbox identity. The shared mailbox is accessed through delegated user accounts.
+![Sales shared mailbox configuration and members](resources/05-Sales-shared-memory.png)
 
-The screenshots document mailbox membership and permission counts, Alex's access, and the resulting Sales message. Reply delivery back to the Sales mailbox was not confirmed. Shared-mailbox sent-item copying was shown as disabled and was not changed.
+Alex opened the shared mailbox and sent a message using the Sales identity. The message arrived in Junui Hong's mailbox with Sales as the sender.
+
+![Alex's access to the Sales shared mailbox](resources/06-sales-shared-from-alex.png)
+
+![Email received from the Sales shared mailbox](resources/07-sales-shared.png)
+
+Read and manage permits mailbox access; Send as permits sending using the shared mailbox identity. Reply delivery back to the Sales mailbox was not confirmed. Shared-mailbox sent-item copying was shown as disabled and was not changed.
 
 ## 4. Delegated Helpdesk Administration
 
-- Assigned the Helpdesk Administrator role to Mia Garcia. The role assignment is shown in the evidence.
-- A screenshot documents a successful password reset performed by Mia for a user account.
-- A separate screenshot shows Emma Lee's successful password update/sign-in flow following the reset.
-- A later attempt to reset Junui Hong's password failed. The displayed error was “We could not reset the password for this user” with detail **Junui Hong : null**.
+Assigned the Helpdesk Administrator role to Mia Garcia.
 
-The failed reset is recorded as an observed result. Its generic error does not establish that role restrictions caused it. The acting account and audit details were not captured with the error, so it is not claimed as a verified least-privilege denial.
+![Mia Garcia assigned the Helpdesk Administrator role](resources/08-IT-helpdesk-role-given.png)
+
+A successful password reset was recorded for a user, followed by Emma Lee's password update/sign-in result.
+
+![Successful password reset by Mia](resources/09-Mia-password-reset-success.png)
+
+![Emma Lee password update/sign-in result](resources/10-Emma-password-success.png)
+
+A later attempt to reset Junui Hong's password failed with the message “We could not reset the password for this user” and detail **Junui Hong : null**.
+
+![Failed password reset attempt for Junui Hong](resources/11-delpdesk-admin-reset-failed.png)
+
+The failure is an observed result. Its generic error does not establish that role restrictions caused it. The acting account and audit details were not captured with the error, so this is not claimed as a verified least-privilege denial.
 
 ## Validation Status
 
@@ -79,7 +89,7 @@ The failed reset is recorded as an observed result. Its generic error does not e
 | Alex user creation and Business Premium assignment | Visually verified |
 | Alex Microsoft 365 sign-in | Visually verified |
 | Alex-to-Junui email delivery | Visually verified |
-| Ten-employee roster and department group completion | Operator reported; evidence includes initial user creation and group list |
+| Ten-employee roster and department group completion | Operator reported; initial user and group list screenshots available |
 | Alex membership in SG-Sales-Users | Visually verified |
 | Sales mailbox creation and permission counts | Visually verified |
 | Sales sender message delivery to Junui | Visually verified |
@@ -89,26 +99,7 @@ The failed reset is recorded as an observed result. Its generic error does not e
 | Junui password reset attempt | Failure visually verified; cause unconfirmed |
 | Reply receipt in Alex/Sales mailbox | Not confirmed |
 
-## Evidence
-
-All screenshots are in [resources/](resources/). Select a filename to view its image.
-
-| File | Evidence |
-| --- | --- |
-| [00-create-new-user.png](resources/00-create-new-user.png) | New user creation details |
-| [01-create-new-user-licence.png](resources/01-create-new-user-licence.png) | User and license assignment |
-| [02-mail-send-receive.png](resources/02-mail-send-receive.png) | Alex-to-Junui email conversation |
-| [03-sales-security-group.png](resources/03-sales-security-group.png) | Alex as a member of SG-Sales-Users |
-| [04-SG.png](resources/04-SG.png) | Department security group list |
-| [05-Sales-shared-memory.png](resources/05-Sales-shared-memory.png) | Sales shared mailbox configuration and members |
-| [06-sales-shared-from-alex.png](resources/06-sales-shared-from-alex.png) | Alex's Sales shared mailbox access |
-| [07-sales-shared.png](resources/07-sales-shared.png) | Message sent using the Sales mailbox |
-| [08-IT-helpdesk-role-given.png](resources/08-IT-helpdesk-role-given.png) | Mia's Helpdesk Administrator role assignment |
-| [09-Mia-password-reset-success.png](resources/09-Mia-password-reset-success.png) | Successful password reset result |
-| [10-Emma-password-success.png](resources/10-Emma-password-success.png) | Emma's password update/sign-in result |
-| [11-delpdesk-admin-reset-failed.png](resources/11-delpdesk-admin-reset-failed.png) | Failed reset attempt for Junui; cause unconfirmed |
-
-Do not publish passwords, temporary passwords, MFA QR codes, recovery codes, or payment information.
+Screenshots are embedded under the corresponding lab activity and stored in [resources/](resources/). Do not publish passwords, temporary passwords, MFA QR codes, recovery codes, or payment information.
 
 ## Next Phase: Windows Endpoint Management
 
