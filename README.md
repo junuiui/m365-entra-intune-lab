@@ -12,7 +12,7 @@ A hands-on Microsoft 365 Business Premium trial lab for cloud identity administr
 | --- | --- |
 | Entra ID test users, departments, security groups, and delegated Helpdesk Administrator role | Complete |
 | Microsoft 365 Business Premium trial license assignment | Complete for the tested account |
-| Sales shared mailbox, member access, and Send as verification | Complete |
+| Sales shared mailbox, member access, and Send as verification | Complete |\n| Exchange mail flow rules and anti-spam/anti-malware policy configuration | Planned |
 | Windows 11 VM joined to Entra ID and enrolled in Intune | Complete |
 | BitLocker policy, compliance evaluation, and compliant device result | Complete |
 | Intune silent application deployment | Planned |
