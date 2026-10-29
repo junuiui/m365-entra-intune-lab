@@ -141,7 +141,7 @@ The recovery key was confirmed present in Intune; the key itself is intentionall
 
 ![Intune device reports Compliant](resources/23-desktop-compliance.png)
 
-This is a single-device lab validation using a Windows evaluation image. No app deployment or Conditional Access enforcement has been completed yet.
+This is a single-device lab validation using a Windows evaluation image. BitLocker encryption and the compliance check were verified on the enrolled endpoint. Conditional Access was later evaluated in Report-only mode and intentionally left unenforced.
 
 ## Validation Status
 
