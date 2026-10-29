@@ -1,28 +1,53 @@
 # Microsoft 365, Entra ID & Intune Administration Lab
 
-A hands-on Microsoft 365 Business Premium trial lab for cloud identity administration, Exchange mail flow, Windows endpoint enrollment, application deployment, BitLocker compliance, and Conditional Access evaluation.
+This project demonstrates cloud identity management, Exchange administration, and Windows endpoint deployment in a simulated company. I used a Microsoft 365 Business Premium trial tenant and a Windows 11 Enterprise Evaluation VM in VMware Workstation.
 
-> This is a personal learning lab using test accounts and a Windows 11 Enterprise Evaluation VM. It is not a production deployment. The tenant uses a Microsoft 365 Business Premium trial, not a Microsoft 365 E5 Developer tenant.
+I built the lab to practice common entry-level IT administration tasks: creating and supporting user accounts, managing shared mailbox access, enrolling a Windows device, deploying an app, and checking security policy results.
 
-## Project status
+## What I Built
 
-**Approximately 90% complete** against the planned lab scope. The core identity, Exchange, Intune enrollment, app deployment, BitLocker compliance, and Conditional Access evaluation scenarios are complete. Conditional Access remains in Report-only mode by choice, and custom Defender portal policies could not be created because the portal returned a DirectInvoke client error.
+### Entra ID user and group management
 
-| Workstream | Status |
-| --- | --- |
-| Entra ID test users, department groups, and delegated Helpdesk Administrator role | Complete |
-| Microsoft 365 Business Premium trial license assignment | Complete for the tested account |
-| Sales shared mailbox, member access, and Send as verification | Complete |
-| Exchange mail flow rule and successful subject-tag test | Complete |
-| Custom anti-spam and anti-malware policy creation | Attempted; portal returned a DirectInvoke client error. Default protections remain in place |
-| Windows 11 VM joined to Entra ID and enrolled in Intune | Complete |
-| BitLocker policy, encryption, compliance evaluation, and compliant device result | Complete |
-| Intune Company Portal app deployment | Complete; installation success verified in the VM |
-| Conditional Access MFA and compliant-device policy | Created and evaluated successfully in Report-only mode; not enforced |
-| Hybrid connection to the existing on-premises AD lab | Optional future extension |
+I created a 10-person test workforce across Sales, HR, Finance, IT, and Operations. I created department security groups and assigned the Helpdesk Administrator role to an IT support test account.
 
-## Evidence and implementation notes
+![Department security groups](resources/04-SG.png)
 
-Detailed steps, configuration choices, verification results, and screenshots are in [admin.md](admin.md). Screenshots are embedded directly below the related tasks and stored in [resources/](resources/).
+### Exchange Online shared mailbox and mail flow
 
-The project uses fictional employee accounts. Passwords, temporary credentials, MFA setup codes, and BitLocker recovery keys are not published.
+I created a Sales shared mailbox, added three members, and verified Send as access. I also created a mail flow rule that adds a `[LAB] -` tag to messages sent to Sales. A test email arrived with the expected subject prefix.
+
+![Sales shared mailbox access](resources/06-sales-shared-from-alex.png)
+
+![Test email with the mail flow tag](resources/29-email-header-success.png)
+
+### Intune enrollment and endpoint compliance
+
+I joined a Windows 11 VM to Entra ID and enrolled it in Intune. I deployed Company Portal to the Sales group and verified installation in Windows. I configured BitLocker encryption and confirmed that the device reported Compliant after it checked in.
+
+![Company Portal installation succeeded](resources/24-VM-intune-software-success.png)
+
+![Windows device reported compliant in Intune](resources/23-desktop-compliance.png)
+
+### Conditional Access evaluation
+
+I created a policy for the Sales group that requires MFA and a compliant device. I tested it in Report-only mode from the enrolled Windows VM and confirmed a successful policy evaluation.
+
+![Conditional Access Report-only evaluation succeeded](resources/27-compliant-success.png)
+
+The policy remains in Report-only mode, so this result confirms evaluation only. It does not mean the policy enforced MFA or blocked access.
+
+## Lab Notes
+
+The default inbound anti-spam policy was shown as Always on. Custom anti-spam and anti-malware policy creation returned a Microsoft Exchange DirectInvoke client error, so I have not listed those custom policies as created.
+
+## Environment
+
+- Microsoft 365 Business Premium trial
+- Cloud-only Entra ID tenant
+- VMware Workstation Windows 11 Enterprise Evaluation VM
+- Existing on-premises AD lab kept separate
+
+## Guides
+
+- [HowTo.md](HowTo.md) — configuration steps used in the lab
+- [ProblemSolving.md](ProblemSolving.md) — issues found, troubleshooting approach, and results
