@@ -53,7 +53,7 @@ This guide records the steps used to configure the lab. It focuses on how to com
 ## 3. Join and Enroll the Windows VM
 
 1. Create a Windows 11 Enterprise Evaluation x64 VM in VMware Workstation. The lab VM uses 8 GB RAM, 2 vCPUs, and an 80 GB virtual disk.
-2. Connect the VM to a network with internet access. The lab used Bridged networking to keep the existing AD lab's VMnet8 network unchanged.
+2. Connect the VM to a network with internet access. Set the VM network adapter to Bridged networking.
 3. Complete Windows setup with a local account.
 4. Open **Settings > Accounts > Access work or school > Connect**.
 5. Sign in with the Entra test user and complete the join.
