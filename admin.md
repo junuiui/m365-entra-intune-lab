@@ -143,26 +143,57 @@ The recovery key was confirmed present in Intune; the key itself is intentionall
 
 This is a single-device lab validation using a Windows evaluation image. BitLocker encryption and the compliance check were verified on the enrolled endpoint. Conditional Access was later evaluated in Report-only mode and intentionally left unenforced.
 
-## Validation Status
+## Final Validation Status
 
 | Check | Status |
 | --- | --- |
-| Windows 11 Enterprise Evaluation VM created | Visually verified |
-| Device joined to Microsoft Entra ID | Visually verified |
-| Device enrolled in Intune and sync completed | Visually verified |
-| Sales BitLocker compliance policy created and assigned | Visually verified |
-| Initial noncompliance because BitLocker was off | Visually verified |
-| BitLocker encryption enabled on C: | Visually verified |
-| Recovery key present in Intune | User confirmed; key not published |
-| Device reports Compliant after check-in | Visually verified |
-| Silent app deployment | Not completed |
-| Conditional Access enforcement | Not completed |
-| Reply receipt in Sales shared mailbox | Not confirmed |
+| Windows 11 Enterprise VM joined to Entra ID and enrolled in Intune | Visually verified |
+| BitLocker policy assigned and encryption enabled | Visually verified |
+| Intune device compliance after BitLocker encryption | Compliant; visually verified |
+| Company Portal app deployment to the Sales group | Installed successfully; VM notification captured |
+| Sales transport rule subject tagging | Verified by received test email |
+| Default inbound anti-spam policy | Visually reviewed; Always on |
+| Custom anti-spam and anti-malware policy creation | Not completed; Defender portal returned a DirectInvoke error |
+| Conditional Access policy for MFA and compliant device | Created for SG-Sales-Users and Office 365 |
+| Conditional Access Report-only evaluation | Success on normal Edge sign-in from the compliant VM |
+| Conditional Access enforcement | Intentionally left off; policy remains Report-only |
 
-Screenshots are embedded under the corresponding lab activity and stored in [resources/](resources/). Do not publish passwords, temporary passwords, MFA QR codes, recovery codes, or payment information.
+## 6. Intune Application Deployment
 
-## Next Steps
+Added the Microsoft Store (new) Company Portal app in Intune as **Company Portal deployment test**, assigned it as Required to **SG-Sales-Users**. The Windows VM received a notification that the app installed successfully.
 
-1. Deploy a small utility app to the Intune-managed VM and verify installation status.
-2. Build a Conditional Access test policy for MFA and compliant-device access, using safe exclusions to avoid locking out the administrator.
-3. Optionally extend the cloud-only lab with the existing on-premises Active Directory environment after documenting the current cloud configuration.
+![Company Portal deployment completed successfully on the VM](resources/24-VM-intune-software-success.png)
+
+The install-status reports were initially empty or delayed. The Windows notification is the verification evidence for this lab run.
+
+## 7. Exchange Online Mail Flow Rule
+
+Created the Exchange transport rule **LAB - Tag Sales mailbox messages**. It applies to messages sent to **sales@junuihonglab.onmicrosoft.com** and prepends **[LAB] -** to the subject, except when the subject or body already contains that tag. The first attempt was rejected because the exception word contained only whitespace; after correcting the condition, the rule was created.
+
+![Initial transport rule configuration](resources/25-exchange-rule.png)
+
+![Corrected transport rule configuration](resources/26-exchange-rule-fixed.png)
+
+Sent a test message to the Sales shared mailbox. The received message subject displayed **[LAB] - Transport Rule test 261029**, confirming the rule applied the prefix.
+
+![Transport rule test message](resources/28-email-hearder-test.png)
+
+![Received test email with the LAB subject prefix](resources/29-email-header-success.png)
+
+## 8. Email Threat Protection Review
+
+Reviewed the tenant's default anti-spam policy, which was shown as **Always on**. Attempts to create custom inbound anti-spam and anti-malware policies in the Defender portal returned **Microsoft.Exchange.Management.PSDirectInvoke.DirectInvokeCmdletExecutionException**. These custom policies were not created. This project records review of the built-in/default protection, not a custom policy deployment.
+
+## 9. Conditional Access Evaluation
+
+Created **CA-Sales-Require-MFA-Compliant-Device** for **SG-Sales-Users**, targeting Office 365 and requiring multifactor authentication and a compliant device. The policy is deliberately set to **Report-only**. A normal Edge sign-in from the enrolled, compliant Windows VM showed **Report-only: Success**.
+
+![Conditional Access report-only evaluation succeeded](resources/27-compliant-success.png)
+
+Report-only mode evaluates what the policy would do; it does not enforce the grant controls or block access. The user chose to leave the policy in this safe evaluation state, so this lab does not claim that MFA or compliance requirements were enforced by Conditional Access.
+
+## Project Closeout
+
+The core identity, mailbox, device enrollment, app deployment, BitLocker, and Conditional Access evaluation scenarios are documented. Two deviations remain explicit: custom Defender policy creation was blocked by a portal error, and Conditional Access was left in Report-only mode by choice. The existing on-premises AD environment remains a separate optional extension.
+
+Screenshots are embedded under the corresponding lab activity and stored in [resources/](resources/). Do not publish passwords, temporary passwords, MFA setup codes, recovery keys, or payment information.
