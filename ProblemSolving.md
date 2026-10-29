@@ -58,8 +58,31 @@ This log records issues seen during the lab and the approach used to investigate
 
 **Result:** The later normal Edge sign-in from the enrolled, compliant Windows VM showed **Report-only: Success**. The policy was left in Report-only mode; it was not enabled or used to block access.
 
+## 8. Entra Cloud Sync Pilot Timed Out
+
+**Issue:** The on-premises pilot user was not confirmed in Entra ID. **Provision on demand** repeatedly timed out, and the Entra provisioning logs did not show a corresponding completed operation. The Cloud Sync configuration showed **Healthy** and the agent showed **Active**, but the user/group sync cycle remained **Not started / Never**. Password Hash Sync reported `HybridIdentityServiceAgentTimeout` and `ConnectorTimeout` / `GatewayTimeout`.
+
+**Approach:**
+
+1. Verified the pilot account in AD:
+   - Account: `hybridpilot`
+   - UPN: `hybridpilot@junuihonglab.onmicrosoft.com`
+   - OU: `OU=CloudSync-Pilot,DC=jh,DC=local`
+   - The account's distinguished name and object GUID were returned by `Get-ADUser`.
+2. Confirmed the provisioning agent service was running and the Entra portal listed the server agent as active.
+3. Restarted the Windows Server VM and the Cloud Sync provisioning configuration, then retried on-demand provisioning.
+4. Checked outbound connectivity from the server. TCP connections to `crl.microsoft.com:80` and `his-sb-hisgeneral-nam-eus1.servicebus.windows.net:443` succeeded.
+5. Sent a WebSocket upgrade probe to the Service Bus endpoint. It returned `HTTP/1.1 101 Switching Protocols`; the client then timed out while the upgraded connection remained open. This confirmed the initial upgrade response, but did not prove that the agent's sustained signaling session or provisioning request worked.
+6. Inspected the provisioning-agent trace. It recorded `Unable to establish a web socket connection`, a remote-host connection reset, and listeners going offline. The agent log also showed the gMSA identity resolved, a credential-store SPN registered, AD credentials written to the Windows credential store, and directory changes applied successfully.
+7. Checked Windows Firewall for enabled outbound block rules; no matching rules were found. The server's firewall profiles were enabled with outbound action `NotConfigured`.
+
+**Result:** The cause was not conclusively identified. The evidence points to an unresolved agent-to-Entra signaling/connector communication timeout; the basic TCP tests alone did not establish that the full sync channel was healthy. The Cloud Sync setup did not complete a verified user synchronization, so this is recorded as an attempted but unsuccessful hybrid integration.
+
+**Next attempt:** Build a fresh AD environment this weekend, then repeat the pilot with a clean domain, new OU/user, and new Cloud Sync configuration. Re-check the provisioning cycle and Entra user object before treating the integration as successful.
+
 ## Notes
 
 - A Report-only result evaluates a policy without enforcing its access controls.
 - Custom Defender policies are not marked complete unless the portal confirms creation.
 - No passwords, MFA setup codes, or BitLocker recovery keys belong in screenshots or repository files.
+- A Cloud Sync agent marked Active or a configuration marked Healthy is not, by itself, proof that a user object synchronized.
