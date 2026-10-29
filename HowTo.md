@@ -7,7 +7,7 @@ This guide records the steps used to configure the lab. It focuses on how to com
 - Microsoft 365 Business Premium trial tenant: `junuihonglab.onmicrosoft.com`
 - Windows 11 Enterprise Evaluation VM in VMware Workstation
 - Test user: Alex Kim (`alexkim@junuihonglab.onmicrosoft.com`)
-- Existing on-premises AD lab remains separate
+- Windows Server 2022 AD lab domain: `jh.local`
 
 ## 1. Create Users, Groups, and a Delegated Admin
 
@@ -149,3 +149,34 @@ This guide records the steps used to configure the lab. It focuses on how to com
 1. In the Microsoft Defender portal, open **Email & collaboration > Policies & rules > Threat policies > Anti-spam policies**.
 2. Review the default inbound anti-spam policy and its status.
 3. Custom policy creation attempts and their portal errors are recorded in [ProblemSolving.md](ProblemSolving.md).
+
+## 9. Configure the Hybrid AD Pilot (Attempted)
+
+1. In Active Directory Users and Computers, create an OU named `CloudSync-Pilot`.
+2. Add the pilot user `Hybrid Pilot` to the OU and set the user's UPN to `hybridpilot@junuihonglab.onmicrosoft.com`.
+3. In **Active Directory Domains and Trusts**, add `junuihonglab.onmicrosoft.com` as an alternate UPN suffix if it is not already available.
+4. On the Windows Server domain controller, install the Microsoft Entra provisioning agent.
+5. In the agent configuration wizard, authenticate with a tenant administrator account, select **Create gMSA**, enter valid domain administrator credentials, select `jh.local`, and complete the configuration.
+6. In the Entra admin center, open **Cloud sync > New configuration > AD to Microsoft Entra ID sync** and select `jh.local`.
+7. Set the scoping filter to **Sync selected organizational units** and add the `CloudSync-Pilot` OU.
+8. Review the attribute mappings, then enable the configuration.
+9. Use **Provision on demand** with the pilot user's distinguished name. Review the operation result and **Provisioning logs**.
+10. Check the configuration overview for the user/group sync cycle status and inspect the latest provisioning-agent trace on the server.
+
+![Alternative UPN suffix](resources/hybrid/01-alternative-UPN-suffix.png)
+
+![Pilot user in the CloudSync-Pilot OU](resources/hybrid/02-hybrid-pilot-creation.png)
+
+![Provisioning agent registered for the domain](resources/hybrid/03-agent.png)
+
+## 10. Planned Clean AD Rebuild
+
+1. Create a fresh Windows Server VM and an isolated virtual network for the new AD lab.
+2. Install AD DS and DNS, promote the server to a new forest, and confirm that the domain controller and DNS are functioning.
+3. Create a new pilot OU and a pilot user with a tenant-matching UPN suffix.
+4. Install and configure the Microsoft Entra provisioning agent on the new server.
+5. Create a new Entra Cloud Sync configuration, scope it only to the pilot OU, and enable it.
+6. Run provisioning on demand for the pilot user.
+7. Verify the result in Entra users and in the provisioning logs before expanding the pilot.
+
+The current hybrid sync attempt and troubleshooting notes are in [ProblemSolving.md](ProblemSolving.md).
