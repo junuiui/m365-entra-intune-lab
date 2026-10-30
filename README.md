@@ -1,69 +1,80 @@
 # Microsoft 365, Entra ID & Intune Administration Lab
 
-This project demonstrates cloud identity management, Exchange administration, and Windows endpoint deployment in a simulated company. I used a Microsoft 365 Business Premium trial tenant and Windows 11 Enterprise Evaluation VMs in VMware Workstation.
+I built this lab to practice everyday Microsoft 365 administration in a small simulated company. I created users and groups, configured mailbox access, joined a Windows device to Entra ID, enrolled it in Intune, deployed an app, and tested security policies.
 
-I built the lab to practice common entry-level IT administration tasks: creating and supporting user accounts, managing shared mailbox access, enrolling a Windows device, deploying an app, applying endpoint security, and investigating a hybrid identity sync issue.
+I also tried connecting an on-premises Active Directory environment to Microsoft Entra ID with Cloud Sync. I rebuilt the AD lab and investigated the timeouts, but I could not verify a successful user sync. I documented the result and the evidence instead of presenting it as a working integration.
 
-## What I Built
+## Lab Environment
 
-### Entra ID user and group management
+- Microsoft 365 Business Premium trial tenant: `junuihonglab.onmicrosoft.com`
+- VMware Workstation
+- Windows 11 Enterprise Evaluation client VM
+- Windows Server 2022 AD lab VMs
+- AD pilot domains: first `jh.local`, then a clean rebuild using `jh.test`
 
-I created a 10-person test workforce across Sales, HR, Finance, IT, and Operations. I created department security groups and assigned the Helpdesk Administrator role to an IT support test account.
+## What I Built and Verified
+
+### Entra ID users, groups, and delegated access
+
+I created a 10-person test workforce across Sales, HR, Finance, IT, and Operations. I organized users into department security groups and assigned the Helpdesk Administrator role to an IT support test account.
 
 ![Department security groups](resources/04-SG.png)
 
 ### Exchange Online shared mailbox and mail flow
 
-I created a Sales shared mailbox, added three members, and verified Send as access. I also created a mail flow rule that adds a `[LAB] -` tag to messages sent to Sales. A test email arrived with the expected subject prefix.
+I created a Sales shared mailbox, added three members, and verified that a test user could send as the mailbox. I also created a mail flow rule that adds `[LAB] -` to messages sent to Sales and confirmed the subject prefix in the delivered email.
 
-![Sales shared mailbox access](resources/06-sales-shared-from-alex.png)
+![Sales shared mailbox opened by Alex](resources/06-sales-shared-from-alex.png)
 
-![Test email with the mail flow tag](resources/29-email-header-success.png)
+![Received email with the mail flow tag](resources/29-email-header-success.png)
 
-### Intune enrollment and endpoint compliance
+### Intune enrollment, app deployment, and device security
 
-I joined a Windows 11 VM to Entra ID and enrolled it in Intune. I deployed Company Portal to the Sales group and verified installation in Windows. I configured BitLocker encryption and confirmed that the device reported Compliant after it checked in.
+I joined a Windows 11 VM to Entra ID and enrolled it in Intune. I assigned Company Portal to the Sales group and confirmed its installation in Windows. I configured BitLocker encryption and confirmed the device reported Compliant after checking in.
 
 ![Company Portal installation succeeded](resources/24-VM-intune-software-success.png)
 
-![Windows device reported compliant in Intune](resources/23-desktop-compliance.png)
+![BitLocker enabled on Windows](resources/22-bitlocker-on.png)
+
+![Intune device reported compliant](resources/23-desktop-compliance.png)
 
 ### Conditional Access evaluation
 
-I created a policy for the Sales group that requires MFA and a compliant device. I tested it in Report-only mode from the enrolled Windows VM and confirmed a successful policy evaluation.
+I created a Sales policy requiring MFA and a compliant device. I kept it in Report-only mode and reviewed sign-in logs. A sign-in from the enrolled, compliant VM showed a successful Report-only evaluation.
 
 ![Conditional Access Report-only evaluation succeeded](resources/27-compliant-success.png)
 
-The policy remains in Report-only mode, so this result confirms evaluation only. It does not mean the policy enforced MFA or blocked access.
+The policy evaluated the sign-in but was not enabled to enforce MFA or block access.
 
-### Hybrid identity sync: attempted, not completed
+## Hybrid Identity: Investigation, Not a Completed Sync
 
-I prepared an on-premises AD pilot OU and a `hybridpilot` account, installed and registered the Microsoft Entra provisioning agent on the Windows Server VM, and configured a Cloud Sync setup for `jh.local`.
+I created an AD pilot user, installed and registered the Microsoft Entra provisioning agent, scoped Cloud Sync to a pilot OU, and tried **Provision on demand**. The first attempt used `jh.local`. After repeated timeouts, I rebuilt the AD environment as `jh.test` and retried with a clean domain.
 
-![Hybrid pilot account and OU](resources/hybrid/02-hybrid-pilot-creation.png)
+The agent registered and appeared active, and Cloud Sync showed Healthy at times. However, the user/group cycle did not complete, on-demand provisioning timed out, and I could not confirm the pilot user in Entra ID. I therefore describe this as an unresolved troubleshooting case, not a successful hybrid deployment.
 
-![Provisioning agent registered for the lab domain](resources/hybrid/03-agent.png)
+![Pilot user created in the first AD lab](resources/hybrid/02-hybrid-pilot-creation.png)
 
-The agent appeared active and the Cloud Sync configuration later showed Healthy, but user/group sync never completed. On-demand provisioning timed out, and the provisioning cycle reported `HybridIdentityServiceAgentTimeout` / `ConnectorTimeout`. I have not confirmed that the pilot user synchronized into Entra ID. This is an unresolved troubleshooting result, not a completed hybrid deployment.
+![Provisioning agent registered for the first lab domain](resources/hybrid/03-agent.png)
 
-![Alternative UPN suffix configured for the pilot](resources/hybrid/01-alternative-UPN-suffix.png)
+The investigation included checking the pilot user's AD attributes and OU, agent service and logs, .NET version, proxy settings, firewall rules, DNS resolution, outbound TCP connectivity, and a Packet Monitor capture. Those checks narrowed the symptoms to a provisioning/connector timeout but did not identify a confirmed root cause. The raw packet capture is not included in the repository.
 
-The next step is to build a fresh, isolated AD lab this weekend and repeat the hybrid setup from a clean baseline.
+## Email Protection Policy Review
 
-## Lab Notes
+I reviewed the tenant's default inbound anti-spam policy and confirmed it was Always on. Attempts to create custom anti-spam and anti-malware policies returned an Exchange portal client error, so I have not listed those custom policies as created.
 
-The default inbound anti-spam policy was shown as Always on. Custom anti-spam and anti-malware policy creation returned a Microsoft Exchange DirectInvoke client error, so I have not listed those custom policies as created.
+## What the Lab Shows
 
-## Environment
+- User and group administration in Entra ID and Microsoft 365
+- Shared mailbox permissions and Exchange mail flow rules
+- Windows Entra ID join and Intune MDM enrollment
+- Required app deployment and endpoint check-in
+- BitLocker configuration and compliance validation
+- Conditional Access sign-in evaluation in Report-only mode
+- Evidence-based troubleshooting with a clearly documented unresolved outcome
 
-- Microsoft 365 Business Premium trial
-- Entra ID tenant: `junuihonglab.onmicrosoft.com`
-- VMware Workstation Windows 11 Enterprise Evaluation client VM
-- Windows Server 2022 AD lab using `jh.local`
-- Microsoft Entra Cloud Sync agent installed on the domain controller VM
-- Hybrid sync validation remains incomplete
+This is a personal lab, not a production tenant or production security configuration.
 
 ## Guides
 
 - [HowTo.md](HowTo.md) — configuration steps used in the lab
-- [ProblemSolving.md](ProblemSolving.md) — issues found, troubleshooting approach, and results
+- [ProblemSolving.md](ProblemSolving.md) — issues, troubleshooting approach, and results
