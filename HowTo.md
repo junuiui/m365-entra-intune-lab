@@ -1,185 +1,152 @@
 # HowTo: Microsoft 365, Entra ID & Intune Lab
 
-This guide lists the configuration steps used in the lab.
+This guide records the steps used to recreate the lab. Microsoft portal labels can change over time. Use a disposable test tenant and test VMs.
 
 ## Lab Environment
 
-- Microsoft 365 Business Premium trial tenant: `junuihonglab.onmicrosoft.com`
-- Windows 11 Enterprise Evaluation VM in VMware Workstation
-- Windows Server 2022 domain controller VMs
-- First AD domain: `jh.local`
-- Rebuilt AD domain: `jh.test`
+- Microsoft 365 Business Premium trial tenant
+- VMware Workstation
+- Windows 11 Enterprise Evaluation client VM
+- Windows Server 2022 Evaluation VM for Active Directory
+- VMware virtual networks: an internet-enabled NAT network and a separate private/host-only network for isolated lab traffic
+- Example AD domain used for the rebuilt pilot: `jh.test`
+- Example pilot OU: `CloudSync-Pilot`
+
+Keep a separate administrative account and test-user accounts. Do not use production accounts or devices.
 
 ## 1. Create Users, Groups, and a Delegated Admin
 
-1. In the Microsoft 365 admin center, open **Users > Active users > Add a user**.
-2. Create cloud users and enter their display names, usernames, passwords, departments, and job titles.
-3. Assign a Microsoft 365 Business Premium license to the users who need it.
-4. Open **Teams & groups > Active teams & groups > Security groups** and create assigned-membership groups:
+1. Open the Microsoft 365 admin center and go to **Users → Active users → Add multiple users**.
+2. Create a small test workforce. In this lab, I created 10 users across Sales, HR, Finance, IT, and Operations.
+3. For each user, set a display name, username, department, job title, and location. Assign a license only when that test user needs licensed services.
+   ![Add new users](resources/00-create-new-user.png)
+   ![Assign a license to a user](resources/01-create-new-user-licence.png)
+4. Go to **Teams & groups → Active teams & groups → Security groups** and create:
    - `SG-Sales-Users`
    - `SG-HR-Users`
    - `SG-Finance-Users`
    - `SG-IT-Users`
    - `SG-Operations-Users`
-5. Add each test user to the matching department group.
-6. In the Entra admin center, open **Roles & administrators**, select **Helpdesk Administrator**, and assign the role to the IT helpdesk test user.
-
-![Create a cloud user](resources/00-create-new-user.png)
-
-![Assign a Business Premium license](resources/01-create-new-user-licence.png)
-
-![Department group membership](resources/03-sales-security-group.png)
-
-![Department security groups](resources/04-SG.png)
-
-![Helpdesk Administrator role assignment](resources/08-IT-helpdesk-role-given.png)
+5. Add each test user to the matching department group. Confirm the group membership before using the group in assignments.
+   ![Create a department security group](resources/03-sales-security-group.png)
+   ![Department security groups](resources/04-SG.png)
+6. In the Microsoft Entra admin center, open **Identity → Roles & admins**. Assign the Helpdesk Administrator role to the lab IT support test account. Check the selected account and role before saving.
+   ![Helpdesk Administrator role assignment](resources/08-IT-helpdesk-role-given.png)
 
 ## 2. Create and Test the Sales Shared Mailbox
 
-1. In the Exchange admin center, open **Recipients > Mailboxes > Add a shared mailbox**.
-2. Create `sales@junuihonglab.onmicrosoft.com`.
-3. Add Alex Kim, Daniel Park, and Emma Lee as mailbox members.
-4. Grant the test users **Read and manage** and **Send as** access.
-5. Sign in as Alex and open the Sales shared mailbox in Outlook.
-6. Send a test message using the Sales mailbox as the sender.
-7. Open the recipient's mailbox and verify the sender and message.
-
-![Sales shared mailbox and members](resources/05-Sales-shared-memory.png)
-
-![Sales mailbox opened by Alex](resources/06-sales-shared-from-alex.png)
-
-![Message received from the Sales mailbox](resources/07-sales-shared.png)
+1. In the Microsoft 365 admin center, go to **Teams & groups → Shared mailboxes → Add a shared mailbox**.
+2. Create a mailbox named **Sales** with address `sales@<your-tenant-domain>`.
+   ![Sales shared mailbox](resources/05-Sales-shared-memory.png)
+3. Open the mailbox and add three test users as members.
+4. In **Manage mailbox permissions**, grant the test users **Read and manage** and **Send as** permissions.
+5. Sign in to Outlook as a member after permissions have propagated. Open the shared mailbox or select it as the From address.
+6. Send a test message to the lab administrator and confirm the received message shows **Sales** as the sender.
+   ![Message sent from Sales shared mailbox](resources/06-sales-shared-from-alex.png)
+   ![Shared mailbox message](resources/07-sales-shared.png)
 
 ## 3. Join and Enroll the Windows VM
 
-1. Create a Windows 11 Enterprise Evaluation x64 VM in VMware Workstation. The lab VM uses 8 GB RAM, 2 vCPUs, and an 80 GB virtual disk.
-2. Connect the VM to a network with internet access.
-3. Complete Windows setup with a local account.
-4. Open **Settings > Accounts > Access work or school > Connect**.
-5. Sign in with the Entra test user and complete the Entra ID join.
-6. Start device management enrollment. Confirm both the Entra ID connection and MDM connection appear in **Access work or school**.
-7. Sign in to Windows as Alex Kim.
-8. In Windows, open **Settings > Accounts > Access work or school**, select the connected account, and choose **Info > Sync**.
-9. In the Intune admin center, open **Devices > Windows > Windows devices**, refresh, and open the device to review its primary user and check-in.
-
-![Windows 11 Enterprise Evaluation VM](resources/15-alex-window11-first.png)
-
-![Entra ID join prompt](resources/12-entraid-join-message.png)
-
-![Windows connected to Entra ID](resources/13-entraid-join-success.png)
-
-![Alex's first Windows sign-in](resources/14-alex-login-success.png)
-
-![Windows work account and MDM connection](resources/16-alex-intune-setting.png)
-
-![Sync initiated from Windows](resources/17-alex-intune-sync-vmside.png)
-
-![Device visible in Intune](resources/18-alex-intune-sync-adminside.png)
-
-![Intune check-in completed](resources/19-alex-intune-sync-complete-adminside.png)
+1. In VMware, create a Windows 11 x64 VM. The lab client used 2 vCPUs, 8 GB RAM, an 80 GB virtual disk, and a virtual TPM.
+2. Attach the Windows 11 Enterprise Evaluation ISO and complete Windows setup with a local account first.
+   ![Windows 11 VM](resources/15-alex-window11-first.png)
+3. In Windows, open **Settings → Accounts → Access work or school → Connect**.
+4. Choose the option to join the device to Microsoft Entra ID, then sign in with the test user assigned to the device (for example, `alexkim@<your-tenant-domain>`).
+5. Complete the join and sign in to Windows with the Entra ID test account.
+   ![Entra ID join prompt](resources/12-entraid-join-message.png)
+   ![Entra ID join completed](resources/13-entraid-join-success.png)
+   ![Test user signed in](resources/14-alex-login-success.png)
+6. In Windows, return to **Settings → Accounts → Access work or school** and confirm the device is connected to the tenant.
+7. In the Intune admin center, open **Devices → Windows → Windows devices** and wait for the device to appear. Use **Sync** on the device record or start a sync from Windows if needed.
+   ![Work account connected](resources/16-alex-intune-setting.png)
+   ![Sync from Windows](resources/17-alex-intune-sync-vmside.png)
+   ![Device sync from Intune](resources/18-alex-intune-sync-adminside.png)
+   ![Intune sync completed](resources/19-alex-intune-sync-complete-adminside.png)
 
 ## 4. Configure BitLocker Compliance
 
-1. In Intune, open **Devices > Compliance > Policies > Create policy**.
-2. Select **Windows 10 and later** and the Windows 10/11 compliance policy type.
-3. Name the policy `WIN-COMP-Sales-BitLocker`.
-4. In **Compliance settings**, require BitLocker.
-5. Assign the policy to `SG-Sales-Users` and create it.
-6. Open **Endpoint security > Disk encryption > Create policy**.
-7. Select Windows, name the policy `WIN-ENC-Sales-BitLocker`, and enable device encryption.
-8. Under **Operating System Drives**, enable drive encryption and select **Used Space Only encryption**. Configure recovery options.
-9. Assign the policy to `SG-Sales-Users` and create it.
-10. In VMware settings, disconnect the Windows installation ISO from the virtual CD/DVD drive.
-11. In the Windows VM, open **Control Panel > System and Security > BitLocker Drive Encryption** and start BitLocker if it has not started from policy.
-12. Wait for encryption to finish, sync the device, and refresh its Intune compliance status.
-13. Confirm the device is marked **Compliant** and that a recovery key is available in Intune. Do not copy the recovery key into repository files.
-
-![BitLocker compliance policy report](resources/20-bitlocker-report-success.png)
-
-![BitLocker encryption in progress](resources/21-bitlocker-encypting.png)
-
-![BitLocker on for the C drive](resources/22-bitlocker-on.png)
-
-![Intune device reports Compliant](resources/23-desktop-compliance.png)
+1. In the Intune admin center, go to **Devices → Compliance → Policies → Create policy**.
+2. Select **Windows 10 and later**, then create a Windows 10/11 compliance policy.
+3. Give it a clear name, such as `WIN-COMP-Sales-BitLocker`.
+4. Under **Compliance settings → Device Health**, set **Require BitLocker** to **Require**. Leave unrelated settings unconfigured for this test.
+5. Under **Actions for noncompliance**, keep the default grace period or set a short lab grace period.
+6. Assign the policy to `SG-Sales-Users`, then review and create it.
+7. On the Windows VM, open **Control Panel → System and Security → BitLocker Drive Encryption**. If setup reports bootable media, disconnect the Windows ISO from the VM's CD/DVD device, restart Windows, and start BitLocker again.
+   ![BitLocker policy report](resources/20-bitlocker-report-success.png)
+   ![BitLocker encryption in progress](resources/21-bitlocker-encypting.png)
+   ![BitLocker enabled](resources/22-bitlocker-on.png)
+8. Allow the device to check in. In Intune, open the device record and **Device compliance**. Confirm the BitLocker policy result and overall compliance state.
+   ![Device compliance result](resources/23-desktop-compliance.png)
 
 ## 5. Deploy an Intune App
 
-1. In Intune, open **Apps > Windows > Create**.
-2. Add **Company Portal** as a Microsoft Store app (new) and name the deployment `Company Portal deployment test`.
-3. Assign it as **Required** to `SG-Sales-Users`.
-4. Sync the Windows VM from **Access work or school**.
-5. Wait for the Windows installation notification and review the app install status in Intune.
-
-![Company Portal installation succeeded on the VM](resources/24-VM-intune-software-success.png)
+1. In the Intune admin center, go to **Apps → Windows → Add**.
+2. Choose **Microsoft Store app (new)** and search for **Company Portal**.
+3. Add the app, save its app information, and assign it as **Required** to `SG-Sales-Users`.
+4. In the assignment settings, use the default notification and restart options for this lab. Review and save.
+5. On the Windows VM, start a device sync and leave it online. Check Windows notifications or the Start menu for Company Portal.
+6. Confirm installation in Windows. Intune's install status report can take longer to update than the device notification.
+   ![Company Portal installation succeeded](resources/24-VM-intune-software-success.png)
 
 ## 6. Create and Test an Exchange Mail Flow Rule
 
-1. In the Exchange admin center, open **Mail flow > Rules > Add a rule**.
+1. Open the Exchange admin center and go to **Mail flow → Rules → Add a rule**.
 2. Name the rule `LAB - Tag Sales mailbox messages`.
-3. Set the recipient condition to `sales@junuihonglab.onmicrosoft.com`.
-4. Set the action to prepend `[LAB] - ` to the subject.
-5. Add an exception for messages whose subject or body includes `[LAB] -`.
-6. Save the rule.
-7. Send a new test email to the Sales mailbox with a subject that does not already contain the tag.
-8. Verify the received message subject begins with `[LAB] -`.
-
-![Initial transport rule configuration](resources/25-exchange-rule.png)
-
-![Corrected transport rule configuration](resources/26-exchange-rule-fixed.png)
-
-![Transport rule test message](resources/28-email-hearder-test.png)
-
-![Received email with the subject prefix](resources/29-email-header-success.png)
+3. Set the condition to **The recipient is** `sales@<your-tenant-domain>`.
+4. Set the action to **Prepend the subject of the message with** `[LAB] - `.
+5. Do not add an exception that checks for the same prefix. Save the rule.
+6. Send a new message to the Sales shared mailbox. Confirm that the received subject starts with `[LAB] -`.
+   ![Mail flow rule configuration](resources/25-exchange-rule.png)
+   ![Saved mail flow rule](resources/26-exchange-rule-fixed.png)
+   ![Mail flow test message](resources/28-email-hearder-test.png)
+   ![Message received with subject prefix](resources/29-email-header-success.png)
 
 ## 7. Create a Conditional Access Policy in Report-Only Mode
 
-1. In the Entra admin center, open **Protection > Conditional Access > Policies > New policy**.
+1. In the Microsoft Entra admin center, go to **Protection → Conditional Access → Policies → New policy**.
 2. Name it `CA-Sales-Require-MFA-Compliant-Device`.
-3. Include the `SG-Sales-Users` group.
-4. Select **Office 365** as the target resource.
-5. Under grant controls, require multifactor authentication and a compliant device.
-6. Set the policy state to **Report-only** and create it.
-7. Sign in to an Office 365 app from the enrolled, compliant Windows VM using a regular Edge browser profile.
-8. Open **Sign-in logs**, select the sign-in, and check the Conditional Access or Report-only tab.
+3. Under **Users**, include `SG-Sales-Users`. Exclude your emergency access/admin account to avoid locking yourself out.
+4. Under **Target resources**, select the cloud app used for the test, or all resources if the lab tenant allows it.
+5. Under **Conditions → Device platforms**, configure the intended Windows scope. Under **Grant**, select **Require multifactor authentication** and **Require device to be marked as compliant**.
+6. Set **Enable policy** to **Report-only**, then create the policy.
+7. Sign in to a test cloud app from the compliant Windows VM. In **Monitoring → Sign-in logs**, open the sign-in and review **Report-only** and **Conditional Access** results.
+8. Keep the policy in Report-only mode for this lab. The screenshots show evaluation only; they do not show enforced access control.
+   ![Conditional Access Report-only success](resources/27-compliant-success.png)
 
-![Conditional Access Report-only evaluation succeeded](resources/27-compliant-success.png)
+## 8. Review Built-In Email Protection
 
-## 8. Review Default Email Protection
-
-1. In the Microsoft Defender portal, open **Email & collaboration > Policies & rules > Threat policies > Anti-spam policies**.
-2. Review the default inbound anti-spam policy and its status.
+1. Open the Microsoft Defender portal and go to **Email & collaboration → Policies & rules → Threat policies → Anti-spam policies**.
+2. Open the built-in inbound anti-spam policy and review its status and settings.
+3. Record the default policy as reviewed. In this lab, custom anti-spam and anti-malware policy creation returned a portal client error, so do not record a custom policy as created.
 
 ## 9. Configure the First Hybrid AD Pilot
 
-1. In Active Directory Users and Computers, create an OU named `CloudSync-Pilot`.
-2. Create the `Hybrid Pilot` user in that OU and set the UPN to `hybridpilot@junuihonglab.onmicrosoft.com`.
-3. In **Active Directory Domains and Trusts**, add `junuihonglab.onmicrosoft.com` as an alternate UPN suffix if it is not available.
-4. On the Windows Server domain controller, install the Microsoft Entra provisioning agent.
-5. In the agent configuration wizard, authenticate with a tenant administrator account, select **Create gMSA**, enter domain administrator credentials, select the AD domain, and complete the configuration.
-6. In the Entra admin center, open **Cloud sync > New configuration > AD to Microsoft Entra ID sync** and select the domain.
-7. Set the scoping filter to **Sync selected organizational units** and add the `CloudSync-Pilot` OU.
-8. Review attribute mappings and configure the sync.
-9. Use **Provision on demand** with the pilot user's distinguished name. Review the operation result and provisioning logs.
-10. Review the configuration overview and the provisioning-agent trace.
+1. In VMware, create a Windows Server VM and install Windows Server 2022 Evaluation with Desktop Experience.
+2. Connect the server to the lab network that provides internet access during setup. For a separate isolated network, use a different private VMnet and keep its subnet separate from other active VMware networks.
+3. Assign the server a static IPv4 address and configure its DNS server to the server's own address after AD DS/DNS is installed. Configure the VMnet gateway/DHCP settings to match the selected VMware network.
+4. In Server Manager, install **Active Directory Domain Services** and **DNS Server**, then promote the server to a domain controller for a new forest. The rebuilt pilot used `jh.test`.
+5. In **Active Directory Users and Computers**, create an OU named `CloudSync-Pilot` and a test user named **Hybrid Pilot** inside it.
+6. Add the tenant's `onmicrosoft.com` UPN suffix in **Active Directory Domains and Trusts → domain Properties → UPN Suffixes**. Set the pilot user's UPN to `hybridpilot@<your-tenant-domain>`.
+   ![Add a UPN suffix](resources/hybrid/01-alternative-UPN-suffix.png)
+   ![Create the hybrid pilot user](resources/hybrid/02-hybrid-pilot-creation.png)
+7. Download the Microsoft Entra provisioning agent from the Cloud Sync configuration page and install it on the Windows Server VM.
+8. In the configuration wizard, select **Connect to your Active Directory domain(s)**, authenticate with an Entra tenant administrator, choose **Create gMSA**, enter domain administrator credentials, select the AD domain, and confirm.
+   ![Provisioning agent registered](resources/hybrid/03-agent.png)
+9. In the Entra admin center, go to **Microsoft Entra Connect → Cloud Sync → New configuration** and select **AD to Microsoft Entra ID sync**.
+10. Select the AD domain and scope the configuration to the `CloudSync-Pilot` OU. Review the attribute mappings and save the configuration.
+11. To get the pilot user's current DN, run this on the domain controller:
+    ```powershell
+    Get-ADUser -Identity hybridpilot -Properties UserPrincipalName,DistinguishedName,ObjectGUID |
+      Format-List Name,SamAccountName,UserPrincipalName,DistinguishedName,ObjectGUID
+    ```
+12. Open the configuration's **Provision on demand** page, choose **User**, and enter the exact DistinguishedName shown by Active Directory. Run the request.
+13. Check **Provisioning logs** and the Entra users list. Record the actual result. In this lab, Provision on demand timed out in the first `jh.local` configuration and again after rebuilding the pilot as `jh.test`; no successful user sync was verified. See [ProblemSolving.md](ProblemSolving.md) for evidence and troubleshooting steps.
 
-![Alternative UPN suffix](resources/hybrid/01-alternative-UPN-suffix.png)
+## 10. Check the Lab Results
 
-![Pilot user in the CloudSync-Pilot OU](resources/hybrid/02-hybrid-pilot-creation.png)
-
-![Provisioning agent registered for the lab domain](resources/hybrid/03-agent.png)
-
-## 10. Rebuild the AD Pilot and Retry Cloud Sync
-
-1. Create a fresh Windows Server 2022 VM in VMware Workstation and connect it to a network with internet access.
-2. Install **Active Directory Domain Services** and **DNS**, then promote the server to a new forest using the lab domain `jh.test`.
-3. Confirm the new domain controller and DNS server are available in Server Manager and DNS Manager.
-4. Create a `CloudSync-Pilot` OU and a pilot user in the new domain.
-5. Add `junuihonglab.onmicrosoft.com` as an alternate UPN suffix and set the pilot user's UPN to `hybridpilot@junuihonglab.onmicrosoft.com`.
-6. Install the Microsoft Entra provisioning agent on the new domain controller.
-7. In the agent configuration wizard, authenticate to the tenant, create a gMSA using domain administrator credentials, select `jh.test`, and finish the wizard.
-8. In Entra Cloud Sync, create an **AD to Microsoft Entra ID** configuration for `jh.test`.
-9. Scope the configuration to the pilot OU and review the attribute mappings.
-10. Use **Provision on demand** for the pilot user, then review **Provisioning logs**, **Agents**, and the configuration's cycle status.
-11. Verify the cloud user object in Entra ID before treating synchronization as complete.
-
-Hybrid sync results and troubleshooting notes are in [ProblemSolving.md](ProblemSolving.md).
+1. Confirm the created cloud users and department groups in Entra ID.
+2. Confirm the Sales shared mailbox test email and the mail flow subject prefix in Outlook.
+3. Confirm the Windows device appears in Intune and shows the expected compliance status.
+4. Confirm Company Portal is installed on the Windows VM.
+5. Confirm Conditional Access results in sign-in logs as **Report-only**.
+6. Keep unresolved items documented with their observed result; do not mark an operation successful without verification.
